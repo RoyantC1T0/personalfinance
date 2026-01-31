@@ -1,7 +1,23 @@
 {
-  "name": "personalfinance",
-  "version": "0.1.0",
-  "private": true,
+  "name": "minimalist-wealth",
+  "version": "1.0.0",
+  "description": "Take control of your finances with a beautiful, minimalist approach. Track income, expenses, and savings goals with voice commands.",
+  "author": "Fransaya",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Fransaya/personalfinance.git"
+  },
+  "keywords": [
+    "finance",
+    "personal-finance",
+    "budget",
+    "expense-tracker",
+    "savings",
+    "nextjs",
+    "typescript",
+    "open-source"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",

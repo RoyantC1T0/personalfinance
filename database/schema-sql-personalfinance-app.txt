@@ -1,0 +1,352 @@
+-- =====================================================
+-- 1. SEGURIDAD Y USUARIOS
+-- =====================================================
+
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name VARCHAR(255),
+    default_currency_code CHAR(3) NOT NULL DEFAULT 'USD',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_users_email ON users(email);
+
+-- =====================================================
+-- 2. MULTIMONEDA DINÁMICA
+-- =====================================================
+
+CREATE TABLE currencies (
+    currency_code CHAR(3) PRIMARY KEY,
+    currency_name VARCHAR(100) NOT NULL,
+    symbol VARCHAR(10),
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tasas de cambio históricas (base: USD)
+CREATE TABLE exchange_rates (
+    exchange_rate_id SERIAL PRIMARY KEY,
+    from_currency_code CHAR(3) NOT NULL REFERENCES currencies(currency_code),
+    to_currency_code CHAR(3) NOT NULL REFERENCES currencies(currency_code),
+    rate DECIMAL(18, 6) NOT NULL,
+    rate_date DATE NOT NULL,
+    source VARCHAR(100), -- API source identifier
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_rate_per_day UNIQUE (from_currency_code, to_currency_code, rate_date),
+    CONSTRAINT no_self_conversion CHECK (from_currency_code != to_currency_code)
+);
+
+CREATE INDEX idx_exchange_rates_lookup ON exchange_rates(from_currency_code, to_currency_code, rate_date DESC);
+
+-- =====================================================
+-- 3. CATEGORIZACIÓN
+-- =====================================================
+
+CREATE TYPE transaction_type AS ENUM ('income', 'expense');
+
+CREATE TABLE categories (
+    category_id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    category_name VARCHAR(100) NOT NULL,
+    transaction_type transaction_type NOT NULL,
+    color_hex VARCHAR(7), -- Para UI: #FF5733
+    icon VARCHAR(50), -- Nombre del icono
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_category_per_user UNIQUE (user_id, category_name, transaction_type)
+);
+
+CREATE INDEX idx_categories_user ON categories(user_id, is_active);
+
+-- =====================================================
+-- 4. TRANSACCIONES (INGRESOS Y GASTOS)
+-- =====================================================
+
+CREATE TABLE transactions (
+    transaction_id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    category_id INTEGER NOT NULL REFERENCES categories(category_id),
+    transaction_type transaction_type NOT NULL,
+    amount DECIMAL(15, 2) NOT NULL CHECK (amount > 0),
+    currency_code CHAR(3) NOT NULL REFERENCES currencies(currency_code),
+    transaction_date DATE NOT NULL,
+    description TEXT,
+    notes TEXT,
+    -- Conversión a moneda base (pre-calculada para performance)
+    base_currency_code CHAR(3) NOT NULL REFERENCES currencies(currency_code),
+    base_amount DECIMAL(15, 2) NOT NULL,
+    exchange_rate_used DECIMAL(18, 6) NOT NULL DEFAULT 1.0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_transactions_user_date ON transactions(user_id, transaction_date DESC);
+CREATE INDEX idx_transactions_category ON transactions(category_id);
+CREATE INDEX idx_transactions_type ON transactions(user_id, transaction_type, transaction_date);
+
+-- =====================================================
+-- 5. MÓDULO DE AHORROS
+-- =====================================================
+
+CREATE TABLE savings_goals (
+    goal_id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    goal_name VARCHAR(255) NOT NULL,
+    target_amount DECIMAL(15, 2) NOT NULL CHECK (target_amount > 0),
+    currency_code CHAR(3) NOT NULL REFERENCES currencies(currency_code),
+    target_date DATE,
+    description TEXT,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_savings_goals_user ON savings_goals(user_id, is_active);
+
+-- Objetivos mensuales de ahorro
+CREATE TABLE monthly_savings_targets (
+    target_id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    goal_id INTEGER REFERENCES savings_goals(goal_id) ON DELETE SET NULL,
+    month_year DATE NOT NULL, -- Primer día del mes: 2024-01-01
+    target_amount DECIMAL(15, 2) NOT NULL CHECK (target_amount >= 0),
+    currency_code CHAR(3) NOT NULL REFERENCES currencies(currency_code),
+    notes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_monthly_target UNIQUE (user_id, month_year, goal_id)
+);
+
+CREATE INDEX idx_monthly_targets_user_month ON monthly_savings_targets(user_id, month_year DESC);
+
+-- Ahorro real acumulado
+CREATE TABLE savings_contributions (
+    contribution_id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    goal_id INTEGER REFERENCES savings_goals(goal_id) ON DELETE SET NULL,
+    amount DECIMAL(15, 2) NOT NULL,
+    currency_code CHAR(3) NOT NULL REFERENCES currencies(currency_code),
+    contribution_date DATE NOT NULL,
+    base_currency_code CHAR(3) NOT NULL REFERENCES currencies(currency_code),
+    base_amount DECIMAL(15, 2) NOT NULL,
+    exchange_rate_used DECIMAL(18, 6) NOT NULL DEFAULT 1.0,
+    notes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_savings_contributions_user ON savings_contributions(user_id, contribution_date DESC);
+CREATE INDEX idx_savings_contributions_goal ON savings_contributions(goal_id);
+
+-- =====================================================
+-- 6. CIERRE DE MES (SNAPSHOTS)
+-- =====================================================
+
+CREATE TABLE month_closures (
+    closure_id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    month_year DATE NOT NULL, -- Primer día del mes cerrado
+    closure_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    -- Resumen financiero
+    total_income DECIMAL(15, 2) NOT NULL DEFAULT 0,
+    total_expenses DECIMAL(15, 2) NOT NULL DEFAULT 0,
+    net_balance DECIMAL(15, 2) NOT NULL DEFAULT 0,
+    total_savings DECIMAL(15, 2) NOT NULL DEFAULT 0,
+    currency_code CHAR(3) NOT NULL REFERENCES currencies(currency_code),
+    -- Balance acumulado desde el inicio
+    accumulated_balance DECIMAL(15, 2) NOT NULL DEFAULT 0,
+    accumulated_savings DECIMAL(15, 2) NOT NULL DEFAULT 0,
+    notes TEXT,
+    is_locked BOOLEAN NOT NULL DEFAULT false, -- Evita modificaciones
+    CONSTRAINT unique_closure_per_month UNIQUE (user_id, month_year)
+);
+
+CREATE INDEX idx_month_closures_user ON month_closures(user_id, month_year DESC);
+
+-- Detalle de balances por categoría al cierre
+CREATE TABLE month_closure_category_summary (
+    summary_id SERIAL PRIMARY KEY,
+    closure_id INTEGER NOT NULL REFERENCES month_closures(closure_id) ON DELETE CASCADE,
+    category_id INTEGER NOT NULL REFERENCES categories(category_id),
+    transaction_type transaction_type NOT NULL,
+    total_amount DECIMAL(15, 2) NOT NULL DEFAULT 0,
+    transaction_count INTEGER NOT NULL DEFAULT 0,
+    CONSTRAINT unique_category_per_closure UNIQUE (closure_id, category_id)
+);
+
+CREATE INDEX idx_closure_summary_closure ON month_closure_category_summary(closure_id);
+
+-- Detalle de objetivos de ahorro al cierre
+CREATE TABLE month_closure_savings_summary (
+    summary_id SERIAL PRIMARY KEY,
+    closure_id INTEGER NOT NULL REFERENCES month_closures(closure_id) ON DELETE CASCADE,
+    goal_id INTEGER REFERENCES savings_goals(goal_id) ON DELETE SET NULL,
+    target_amount DECIMAL(15, 2) NOT NULL DEFAULT 0,
+    actual_amount DECIMAL(15, 2) NOT NULL DEFAULT 0,
+    variance DECIMAL(15, 2) NOT NULL DEFAULT 0, -- actual - target
+    accumulated_total DECIMAL(15, 2) NOT NULL DEFAULT 0,
+    CONSTRAINT unique_goal_per_closure UNIQUE (closure_id, goal_id)
+);
+
+CREATE INDEX idx_closure_savings_closure ON month_closure_savings_summary(closure_id);
+
+-- =====================================================
+-- 7. FUNCIONES Y TRIGGERS ÚTILES
+-- =====================================================
+
+-- Función para actualizar updated_at automáticamente
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Triggers para updated_at
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_transactions_updated_at BEFORE UPDATE ON transactions
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_savings_goals_updated_at BEFORE UPDATE ON savings_goals
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_monthly_savings_targets_updated_at BEFORE UPDATE ON monthly_savings_targets
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- =====================================================
+-- 8. FUNCIÓN PARA OBTENER TASA DE CAMBIO
+-- =====================================================
+
+CREATE OR REPLACE FUNCTION get_exchange_rate(
+    p_from_currency CHAR(3),
+    p_to_currency CHAR(3),
+    p_date DATE
+) RETURNS DECIMAL(18, 6) AS $$
+DECLARE
+    v_rate DECIMAL(18, 6);
+BEGIN
+    -- Si son la misma moneda, retorna 1
+    IF p_from_currency = p_to_currency THEN
+        RETURN 1.0;
+    END IF;
+    
+    -- Buscar tasa exacta para la fecha
+    SELECT rate INTO v_rate
+    FROM exchange_rates
+    WHERE from_currency_code = p_from_currency
+      AND to_currency_code = p_to_currency
+      AND rate_date = p_date
+    LIMIT 1;
+    
+    -- Si no existe para esa fecha exacta, buscar la más reciente anterior
+    IF v_rate IS NULL THEN
+        SELECT rate INTO v_rate
+        FROM exchange_rates
+        WHERE from_currency_code = p_from_currency
+          AND to_currency_code = p_to_currency
+          AND rate_date <= p_date
+        ORDER BY rate_date DESC
+        LIMIT 1;
+    END IF;
+    
+    -- Si aún no existe, intentar con la inversa
+    IF v_rate IS NULL THEN
+        SELECT 1.0 / rate INTO v_rate
+        FROM exchange_rates
+        WHERE from_currency_code = p_to_currency
+          AND to_currency_code = p_from_currency
+          AND rate_date <= p_date
+        ORDER BY rate_date DESC
+        LIMIT 1;
+    END IF;
+    
+    RETURN COALESCE(v_rate, 1.0);
+END;
+$$ LANGUAGE plpgsql;
+
+-- =====================================================
+-- 9. DATOS INICIALES
+-- =====================================================
+
+-- Monedas comunes
+INSERT INTO currencies (currency_code, currency_name, symbol) VALUES
+('USD', 'US Dollar', '$'),
+('ARS', 'Argentine Peso', '$'),
+('EUR', 'Euro', '€'),
+('GBP', 'British Pound', '£');
+
+-- =====================================================
+-- 10. VISTAS ÚTILES
+-- =====================================================
+
+-- Vista para balance mensual actual
+CREATE OR REPLACE VIEW v_current_month_balance AS
+SELECT 
+    t.user_id,
+    DATE_TRUNC('month', t.transaction_date)::DATE AS month_year,
+    t.base_currency_code AS currency_code,
+    SUM(CASE WHEN t.transaction_type = 'income' THEN t.base_amount ELSE 0 END) AS total_income,
+    SUM(CASE WHEN t.transaction_type = 'expense' THEN t.base_amount ELSE 0 END) AS total_expenses,
+    SUM(CASE WHEN t.transaction_type = 'income' THEN t.base_amount ELSE -t.base_amount END) AS net_balance
+FROM transactions t
+GROUP BY t.user_id, DATE_TRUNC('month', t.transaction_date)::DATE, t.base_currency_code;
+
+-- Vista para progreso de ahorro mensual
+CREATE OR REPLACE VIEW v_monthly_savings_progress AS
+SELECT 
+    mst.user_id,
+    mst.month_year,
+    mst.goal_id,
+    sg.goal_name,
+    mst.target_amount,
+    mst.currency_code,
+    COALESCE(SUM(sc.base_amount), 0) AS actual_amount,
+    mst.target_amount - COALESCE(SUM(sc.base_amount), 0) AS variance
+FROM monthly_savings_targets mst
+LEFT JOIN savings_goals sg ON mst.goal_id = sg.goal_id
+LEFT JOIN savings_contributions sc 
+    ON sc.goal_id = mst.goal_id 
+    AND DATE_TRUNC('month', sc.contribution_date)::DATE = mst.month_year
+GROUP BY mst.user_id, mst.month_year, mst.goal_id, sg.goal_name, 
+         mst.target_amount, mst.currency_code;
+         
+
+-- Tabla de auditoría para voice commands
+CREATE TABLE voice_commands_log (
+command_id SERIAL PRIMARY KEY,
+user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+raw_transcription TEXT NOT NULL,
+processed_json JSONB,
+detected_intent VARCHAR(50), -- 'add_expense', 'add_income', 'set_goal', 'query_balance'
+confidence_score DECIMAL(3,2), -- 0.00 a 1.00
+execution_status VARCHAR(20) DEFAULT 'pending', -- 'pending', 'executed', 'failed', 'ambiguous'
+error_message TEXT,
+created_transaction_id INTEGER REFERENCES transactions(transaction_id),
+created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);CREATE INDEX idx_voice_commands_user ON voice_commands_log(user_id, created_at DESC);-- Tabla para configuración de usuario (UI preferences)
+CREATE TABLE user_preferences (
+preference_id SERIAL PRIMARY KEY,
+user_id INTEGER NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
+theme VARCHAR(20) DEFAULT 'light', -- 'light', 'dark', 'auto'
+language CHAR(2) DEFAULT 'en', -- 'en', 'es'
+enable_voice_commands BOOLEAN DEFAULT true,
+enable_notifications BOOLEAN DEFAULT true,
+monthly_income DECIMAL(15,2), -- Ingreso base mensual
+created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);-- Tabla para balance en tiempo real (cache computado)
+CREATE TABLE user_balance_cache (
+balance_id SERIAL PRIMARY KEY,
+user_id INTEGER NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
+current_month_income DECIMAL(15,2) DEFAULT 0,
+current_month_expenses DECIMAL(15,2) DEFAULT 0,
+current_month_balance DECIMAL(15,2) DEFAULT 0,
+total_savings DECIMAL(15,2) DEFAULT 0,
+currency_code CHAR(3) NOT NULL REFERENCES currencies(currency_code),
+last_updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

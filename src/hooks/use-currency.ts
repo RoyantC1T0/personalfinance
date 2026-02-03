@@ -9,11 +9,15 @@ interface CurrencyState {
   displayCurrency: Currency;
 }
 
-export function useCurrency() {
-  const [state, setState] = useState<CurrencyState>({
-    baseCurrency: "USD",
-    displayCurrency: "USD",
-  });
+interface UseCurrencyOptions {
+  initialCurrency?: Currency;
+}
+
+export function useCurrency(options?: UseCurrencyOptions) {
+  const [state, setState] = useState<CurrencyState>(() => ({
+    baseCurrency: options?.initialCurrency || "USD",
+    displayCurrency: options?.initialCurrency || "USD",
+  }));
 
   const toggleCurrency = useCallback(() => {
     setState((prev) => ({

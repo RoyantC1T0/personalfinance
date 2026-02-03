@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { reportsApi } from "@/lib/api-client";
+import { useLanguage } from "@/components/language-provider";
 import { formatCurrency } from "@/lib/utils";
 import { Loader2, TrendingUp, PieChartIcon } from "lucide-react";
 import {
@@ -49,6 +50,7 @@ interface SummaryData {
 }
 
 export default function ReportsPage() {
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
   const [period, setPeriod] = useState("6");
   const [categories, setCategories] = useState<CategoryData[]>([]);
@@ -91,19 +93,17 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Reports</h1>
-          <p className="text-muted-foreground">
-            Analyze your spending patterns and trends
-          </p>
+          <h1 className="text-2xl font-bold">{t("reports")}</h1>
+          <p className="text-muted-foreground">{t("financialInsights")}</p>
         </div>
         <Select value={period} onValueChange={setPeriod}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select period" />
+            <SelectValue placeholder={t("period")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="3">Last 3 months</SelectItem>
-            <SelectItem value="6">Last 6 months</SelectItem>
-            <SelectItem value="12">Last 12 months</SelectItem>
+            <SelectItem value="3">{t("last3Months")}</SelectItem>
+            <SelectItem value="6">{t("last6Months")}</SelectItem>
+            <SelectItem value="12">{t("thisYear")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -114,7 +114,7 @@ export default function ReportsPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">
-                Total Income
+                {t("totalIncome")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -126,7 +126,7 @@ export default function ReportsPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">
-                Total Expenses
+                {t("totalExpenses")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -137,7 +137,9 @@ export default function ReportsPage() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Net Balance</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {t("netBalance")}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <span
@@ -150,7 +152,7 @@ export default function ReportsPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">
-                Transactions
+                {t("transactionCount")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -169,7 +171,7 @@ export default function ReportsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <PieChartIcon className="h-5 w-5 text-primary" />
-              Expenses by Category
+              {t("expensesByCategory")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -204,7 +206,7 @@ export default function ReportsPage() {
               </div>
             ) : (
               <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                No expense data available
+                {t("noExpenseData")}
               </div>
             )}
           </CardContent>
@@ -213,7 +215,7 @@ export default function ReportsPage() {
         {/* Category Breakdown List */}
         <Card>
           <CardHeader>
-            <CardTitle>Category Breakdown</CardTitle>
+            <CardTitle>{t("expensesByCategory")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -242,7 +244,7 @@ export default function ReportsPage() {
                 ))
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
-                  No data available
+                  {t("noDataAvailable")}
                 </div>
               )}
             </div>
@@ -254,7 +256,7 @@ export default function ReportsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-primary" />
-              Monthly Trend
+              {t("monthlyTrend")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -278,7 +280,7 @@ export default function ReportsPage() {
                     <Line
                       type="monotone"
                       dataKey="income"
-                      name="Income"
+                      name={t("income")}
                       stroke="hsl(var(--success))"
                       strokeWidth={2}
                       dot={{ r: 4 }}
@@ -286,7 +288,7 @@ export default function ReportsPage() {
                     <Line
                       type="monotone"
                       dataKey="expenses"
-                      name="Expenses"
+                      name={t("expenses")}
                       stroke="hsl(var(--destructive))"
                       strokeWidth={2}
                       dot={{ r: 4 }}
@@ -294,7 +296,7 @@ export default function ReportsPage() {
                     <Line
                       type="monotone"
                       dataKey="balance"
-                      name="Balance"
+                      name={t("netBalance")}
                       stroke="hsl(var(--primary))"
                       strokeWidth={2}
                       dot={{ r: 4 }}
@@ -305,7 +307,7 @@ export default function ReportsPage() {
               </div>
             ) : (
               <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                No trend data available
+                {t("noDataAvailable")}
               </div>
             )}
           </CardContent>

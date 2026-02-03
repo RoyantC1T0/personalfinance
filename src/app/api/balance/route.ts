@@ -11,6 +11,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Get user's default currency
+    const userInfo = await queryOne<{ default_currency_code: string }>(
+      `SELECT default_currency_code FROM users WHERE user_id = $1`,
+      [auth.userId],
+    );
+    const userCurrency = userInfo?.default_currency_code || "USD";
+
     // Get the last closure date
     const lastClosure = await queryOne<{
       closure_date: string;
@@ -62,45 +69,92 @@ export async function GET(request: NextRequest) {
       arsRate = 1;
     }
 
-    const monthlyBaseIncome = Number(userPrefs?.monthly_income) || 0;
+    // Monthly income - convert to USD if user's currency is ARS
+    const rawMonthlyIncome = Number(userPrefs?.monthly_income) || 0;
+    // If user's currency is ARS, the monthly income is stored in ARS, so we need to convert to USD for base calculations
+    const monthlyBaseIncomeInUSD =
+      userCurrency === "ARS" ? rawMonthlyIncome / arsRate : rawMonthlyIncome;
+
     const transactionIncome = parseFloat(monthlyStats?.income || "0");
     const expenses = parseFloat(monthlyStats?.expenses || "0");
-    const totalIncome = transactionIncome + monthlyBaseIncome;
-    const netBalance = totalIncome - expenses;
+
+    // All calculations are in USD (base currency)
+    const totalIncomeUSD = transactionIncome + monthlyBaseIncomeInUSD;
+    const netBalanceUSD = totalIncomeUSD - expenses;
 
     // Calculate total savings
     const savingsResult = await queryOne<{ total: string }>(
       `SELECT COALESCE(SUM(base_amount), 0) as total FROM savings_contributions WHERE user_id = $1`,
       [auth.userId],
     );
-    const totalSavings = parseFloat(savingsResult?.total || "0");
+    const totalSavingsUSD = parseFloat(savingsResult?.total || "0");
 
-    return NextResponse.json({
-      current_month_income: totalIncome,
-      current_month_expenses: expenses,
-      current_month_balance: netBalance,
-      monthly_base_income: monthlyBaseIncome,
-      extra_income: transactionIncome,
-      total_savings: totalSavings,
-      accumulated_balance: previousAccumulated,
-      last_closure_date: lastClosure?.closure_date || null,
-      currency_code: "USD",
-      conversions: {
+    // Prepare values based on user's currency
+    const displayIncome =
+      userCurrency === "ARS" ? totalIncomeUSD * arsRate : totalIncomeUSD;
+    const displayExpenses =
+      userCurrency === "ARS" ? expenses * arsRate : expenses;
+    const displayBalance =
+      userCurrency === "ARS" ? netBalanceUSD * arsRate : netBalanceUSD;
+    const displaySavings =
+      userCurrency === "ARS" ? totalSavingsUSD * arsRate : totalSavingsUSD;
+    const displayMonthlyBase = rawMonthlyIncome; // Show in user's currency as stored
+
+    // Calculate conversions based on user's base currency
+    // If user's base is ARS: ARS values are the "native" values, USD = ARS / rate
+    // If user's base is USD: USD values are the "native" values, ARS = USD * rate
+    let conversions;
+    if (userCurrency === "ARS") {
+      // User's base is ARS
+      conversions = {
+        ARS: {
+          income: displayIncome,
+          expenses: displayExpenses,
+          balance: displayBalance,
+          savings: displaySavings,
+        },
         USD: {
-          income: totalIncome,
+          income: displayIncome / arsRate,
+          expenses: displayExpenses / arsRate,
+          balance: displayBalance / arsRate,
+          savings: displaySavings / arsRate,
+        },
+      };
+    } else {
+      // User's base is USD
+      conversions = {
+        USD: {
+          income: totalIncomeUSD,
           expenses,
-          balance: netBalance,
-          savings: totalSavings,
+          balance: netBalanceUSD,
+          savings: totalSavingsUSD,
         },
         ARS: {
-          income: totalIncome * arsRate,
+          income: totalIncomeUSD * arsRate,
           expenses: expenses * arsRate,
-          balance: netBalance * arsRate,
-          savings: totalSavings * arsRate,
+          balance: netBalanceUSD * arsRate,
+          savings: totalSavingsUSD * arsRate,
         },
-      },
+      };
+    }
+
+    return NextResponse.json({
+      current_month_income: displayIncome,
+      current_month_expenses: displayExpenses,
+      current_month_balance: displayBalance,
+      monthly_base_income: displayMonthlyBase,
+      extra_income:
+        userCurrency === "ARS"
+          ? transactionIncome * arsRate
+          : transactionIncome,
+      total_savings: displaySavings,
+      accumulated_balance: previousAccumulated,
+      last_closure_date: lastClosure?.closure_date || null,
+      currency_code: userCurrency,
+      conversions,
       exchange_rate: {
         USD_to_ARS: arsRate,
+        ARS_to_USD: 1 / arsRate,
         blue_dollar: blueRateInfo,
         updated_at: new Date().toISOString(),
       },
@@ -124,7 +178,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { monthly_income } = body;
+    const { monthly_income, currency_code } = body;
 
     if (monthly_income === undefined || monthly_income < 0) {
       return NextResponse.json(
@@ -139,6 +193,15 @@ export async function POST(request: NextRequest) {
        WHERE user_id = $2`,
       [monthly_income, auth.userId],
     );
+
+    // If currency_code is provided, update the user's default currency
+    if (currency_code && ["USD", "ARS", "EUR"].includes(currency_code)) {
+      await query(
+        `UPDATE users SET default_currency_code = $1, updated_at = CURRENT_TIMESTAMP 
+         WHERE user_id = $2`,
+        [currency_code, auth.userId],
+      );
+    }
 
     // Recalculate balance
     const monthStart = new Date();
@@ -159,7 +222,7 @@ export async function POST(request: NextRequest) {
       [auth.userId, monthStartStr, monthly_income],
     );
 
-    return NextResponse.json({ success: true, monthly_income });
+    return NextResponse.json({ success: true, monthly_income, currency_code });
   } catch (error) {
     console.error("Set monthly income error:", error);
     return NextResponse.json(

@@ -60,14 +60,27 @@ interface TrendData {
 
 export default function DashboardPage() {
   const { balance, refetch, closeBalance } = useBalanceContext();
-  const { displayCurrency, toggleCurrency } = useCurrency();
   const { blueRate, refetch: refetchBlue } = useBlueRate();
   const { language, setLanguage, t } = useLanguage();
+
+  // Initialize display currency with user's configured currency from balance
+  const userCurrency = (balance?.currency_code as "USD" | "ARS") || "USD";
+  const { displayCurrency, toggleCurrency, setDisplayCurrency } = useCurrency({
+    initialCurrency: userCurrency,
+  });
+
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>(
     [],
   );
   const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
   const [trendData, setTrendData] = useState<TrendData[]>([]);
+
+  // Sync display currency when balance loads with user's currency
+  useEffect(() => {
+    if (balance?.currency_code) {
+      setDisplayCurrency(balance.currency_code as "USD" | "ARS");
+    }
+  }, [balance?.currency_code, setDisplayCurrency]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -142,8 +155,20 @@ export default function DashboardPage() {
             <Languages className="h-4 w-4 mr-1" />
             {language.toUpperCase()}
           </Button>
-          <Button variant="outline" size="sm" onClick={toggleCurrency}>
+          <Button
+            variant={displayCurrency === userCurrency ? "outline" : "secondary"}
+            size="sm"
+            onClick={toggleCurrency}
+            title={
+              displayCurrency === userCurrency
+                ? `Ver en ${displayCurrency === "ARS" ? "USD" : "ARS"}`
+                : `Volver a ${userCurrency}`
+            }
+          >
             {displayCurrency}
+            {displayCurrency !== userCurrency && (
+              <span className="ml-1 text-xs opacity-70">→ {userCurrency}</span>
+            )}
           </Button>
           <Button
             variant="outline"

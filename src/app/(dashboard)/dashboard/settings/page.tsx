@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/components/theme-provider";
+import { useLanguage } from "@/components/language-provider";
 import { balanceApi, categoriesApi } from "@/lib/api-client";
 import {
   User,
@@ -45,6 +46,7 @@ interface Category {
 export default function SettingsPage() {
   const { user, refreshUser } = useAuth();
   const { setTheme, resolvedTheme } = useTheme();
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [monthlyIncome, setMonthlyIncome] = useState("");
@@ -83,7 +85,10 @@ export default function SettingsPage() {
 
     setIsLoading(true);
     try {
-      await balanceApi.setMonthlyIncome(parseFloat(monthlyIncome));
+      await balanceApi.setMonthlyIncome(
+        parseFloat(monthlyIncome),
+        preferences.currency,
+      );
       await refreshUser();
     } catch (error) {
       console.error("Error saving monthly income:", error);
@@ -103,10 +108,8 @@ export default function SettingsPage() {
     <div className="space-y-6 max-w-3xl">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">
-          Manage your account and preferences
-        </p>
+        <h1 className="text-2xl font-bold">{t("settings")}</h1>
+        <p className="text-muted-foreground">{t("managePreferences")}</p>
       </div>
 
       {/* Profile Section */}
@@ -114,18 +117,18 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5 text-primary" />
-            Profile
+            {t("profile")}
           </CardTitle>
-          <CardDescription>Your personal information</CardDescription>
+          <CardDescription>{t("personalInfo")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <Label>Full Name</Label>
+              <Label>{t("fullName")}</Label>
               <Input value={user?.full_name || ""} disabled />
             </div>
             <div>
-              <Label>Email</Label>
+              <Label>{t("email")}</Label>
               <Input value={user?.email || ""} disabled />
             </div>
           </div>
@@ -137,35 +140,26 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5 text-primary" />
-            Financial Settings
+            {t("financialSettings")}
           </CardTitle>
-          <CardDescription>Configure your income and currency</CardDescription>
+          <CardDescription>{t("configureIncome")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Monthly Base Income</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  value={monthlyIncome}
-                  onChange={(e) => setMonthlyIncome(e.target.value)}
-                />
-                <Button onClick={handleSaveIncome} disabled={isLoading}>
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
+              <Label>{t("monthlyBaseIncome")}</Label>
+              <Input
+                type="number"
+                placeholder="0.00"
+                value={monthlyIncome}
+                onChange={(e) => setMonthlyIncome(e.target.value)}
+              />
               <p className="text-xs text-muted-foreground">
-                Your fixed monthly income (salary, etc.)
+                {t("fixedMonthlyIncome")}
               </p>
             </div>
             <div className="space-y-2">
-              <Label>Default Currency</Label>
+              <Label>{t("defaultCurrency")}</Label>
               <Select
                 value={preferences.currency}
                 onValueChange={(value) =>
@@ -181,7 +175,20 @@ export default function SettingsPage() {
                   <SelectItem value="EUR">EUR - Euro</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                {t("defaultCurrency")}
+              </p>
             </div>
+          </div>
+          <div className="flex justify-end pt-2">
+            <Button onClick={handleSaveIncome} disabled={isLoading}>
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              {t("save")} {t("financialSettings")}
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -191,9 +198,9 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Palette className="h-5 w-5 text-primary" />
-            Preferences
+            {t("preferences")}
           </CardTitle>
-          <CardDescription>Customize your experience</CardDescription>
+          <CardDescription>{t("customizeExperience")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
@@ -204,10 +211,10 @@ export default function SettingsPage() {
                 ) : (
                   <Sun className="h-4 w-4" />
                 )}
-                Dark Mode
+                {t("darkMode")}
               </Label>
               <p className="text-xs text-muted-foreground">
-                Switch between light and dark theme
+                {t("switchTheme")}
               </p>
             </div>
             <Switch
@@ -222,10 +229,10 @@ export default function SettingsPage() {
             <div className="space-y-0.5">
               <Label className="flex items-center gap-2">
                 <Mic className="h-4 w-4" />
-                Voice Commands
+                {t("voiceCommands")}
               </Label>
               <p className="text-xs text-muted-foreground">
-                Enable voice input for quick transactions
+                {t("enableVoiceInput")}
               </p>
             </div>
             <Switch
@@ -240,10 +247,10 @@ export default function SettingsPage() {
             <div className="space-y-0.5">
               <Label className="flex items-center gap-2">
                 <Bell className="h-4 w-4" />
-                Notifications
+                {t("notifications")}
               </Label>
               <p className="text-xs text-muted-foreground">
-                Receive reminders and updates
+                {t("receiveReminders")}
               </p>
             </div>
             <Switch
@@ -259,12 +266,14 @@ export default function SettingsPage() {
       {/* Categories */}
       <Card>
         <CardHeader>
-          <CardTitle>Categories</CardTitle>
-          <CardDescription>Your transaction categories</CardDescription>
+          <CardTitle>{t("categories")}</CardTitle>
+          <CardDescription>{t("yourCategories")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label className="text-sm font-medium">Expense Categories</Label>
+            <Label className="text-sm font-medium">
+              {t("expenseCategories")}
+            </Label>
             <div className="mt-2 flex flex-wrap gap-2">
               {expenseCategories.map((cat) => (
                 <div
@@ -286,7 +295,9 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <Label className="text-sm font-medium">Income Categories</Label>
+            <Label className="text-sm font-medium">
+              {t("incomeCategories")}
+            </Label>
             <div className="mt-2 flex flex-wrap gap-2">
               {incomeCategories.map((cat) => (
                 <div

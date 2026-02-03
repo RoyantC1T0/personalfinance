@@ -110,10 +110,10 @@ export const categoriesApi = {
 export const balanceApi = {
   get: () => fetchAPI<object>("/balance"),
 
-  setMonthlyIncome: (monthly_income: number) =>
+  setMonthlyIncome: (monthly_income: number, currency_code?: string) =>
     fetchAPI<{ success: boolean }>("/balance", {
       method: "POST",
-      body: JSON.stringify({ monthly_income }),
+      body: JSON.stringify({ monthly_income, currency_code }),
     }),
 
   closeBalance: () =>

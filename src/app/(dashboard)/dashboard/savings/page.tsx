@@ -21,6 +21,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { savingsApi } from "@/lib/api-client";
+import { useLanguage } from "@/components/language-provider";
 import { formatCurrency } from "@/lib/utils";
 import { Plus, PiggyBank, Target, Loader2, DollarSign } from "lucide-react";
 
@@ -37,6 +38,7 @@ interface SavingsGoal {
 }
 
 export default function SavingsPage() {
+  const { t } = useLanguage();
   const [goals, setGoals] = useState<SavingsGoal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
@@ -166,14 +168,12 @@ export default function SavingsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Savings Goals</h1>
-          <p className="text-muted-foreground">
-            Track your progress towards financial goals
-          </p>
+          <h1 className="text-2xl font-bold">{t("savingsGoals")}</h1>
+          <p className="text-muted-foreground">{t("trackSavingsGoals")}</p>
         </div>
         <Button onClick={() => setIsGoalModalOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          New Goal
+          {t("newGoal")}
         </Button>
       </div>
 
@@ -184,19 +184,23 @@ export default function SavingsPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-green-600" />
-              USD Savings
+              {t("totalSaved")} USD
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between items-baseline">
-                <span className="text-xs text-muted-foreground">Saved</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("saved")}
+                </span>
                 <span className="text-lg font-bold text-green-600">
                   {formatCurrency(totalsByUSD.saved, "USD")}
                 </span>
               </div>
               <div className="flex justify-between items-baseline">
-                <span className="text-xs text-muted-foreground">Target</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("targetAmount")}
+                </span>
                 <span className="text-sm font-medium">
                   {formatCurrency(totalsByUSD.target, "USD")}
                 </span>
@@ -216,19 +220,23 @@ export default function SavingsPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <PiggyBank className="h-4 w-4 text-blue-600" />
-              ARS Savings
+              {t("totalSaved")} ARS
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between items-baseline">
-                <span className="text-xs text-muted-foreground">Saved</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("saved")}
+                </span>
                 <span className="text-lg font-bold text-blue-600">
                   {formatCurrency(totalsByARS.saved, "ARS")}
                 </span>
               </div>
               <div className="flex justify-between items-baseline">
-                <span className="text-xs text-muted-foreground">Target</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("targetAmount")}
+                </span>
                 <span className="text-sm font-medium">
                   {formatCurrency(totalsByARS.target, "ARS")}
                 </span>
@@ -248,7 +256,7 @@ export default function SavingsPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Target className="h-4 w-4 text-primary" />
-              Active Goals
+              {t("activeGoals")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -333,7 +341,7 @@ export default function SavingsPage() {
 
                 <div className="flex justify-between text-sm">
                   <div>
-                    <p className="text-muted-foreground">Saved</p>
+                    <p className="text-muted-foreground">{t("saved")}</p>
                     <p className="font-medium text-success">
                       {formatCurrency(
                         goal.accumulated_amount,
@@ -342,7 +350,7 @@ export default function SavingsPage() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-muted-foreground">Target</p>
+                    <p className="text-muted-foreground">{t("targetAmount")}</p>
                     <p className="font-medium">
                       {formatCurrency(goal.target_amount, goal.currency_code)}
                     </p>
@@ -371,7 +379,7 @@ export default function SavingsPage() {
                   onClick={() => openContributeModal(goal)}
                 >
                   <DollarSign className="h-4 w-4 mr-2" />
-                  Add Contribution
+                  {t("addContribution")}
                 </Button>
               </CardContent>
             </Card>
@@ -381,13 +389,11 @@ export default function SavingsPage() {
         <Card>
           <CardContent className="text-center py-12">
             <PiggyBank className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-medium mb-2">No savings goals yet</h3>
-            <p className="text-muted-foreground mb-4">
-              Create your first goal to start tracking your savings
-            </p>
+            <h3 className="text-lg font-medium mb-2">{t("noGoalsYet")}</h3>
+            <p className="text-muted-foreground mb-4">{t("createFirstGoal")}</p>
             <Button onClick={() => setIsGoalModalOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Create Goal
+              {t("createGoal")}
             </Button>
           </CardContent>
         </Card>
@@ -397,11 +403,11 @@ export default function SavingsPage() {
       <Dialog open={isGoalModalOpen} onOpenChange={setIsGoalModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create Savings Goal</DialogTitle>
+            <DialogTitle>{t("createGoal")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleCreateGoal} className="space-y-4">
             <div>
-              <Label>Goal Name</Label>
+              <Label>{t("goalName")}</Label>
               <Input
                 placeholder="e.g., Emergency Fund, Vacation"
                 value={goalForm.goal_name}
@@ -414,7 +420,7 @@ export default function SavingsPage() {
 
             <div className="grid grid-cols-3 gap-2">
               <div className="col-span-2">
-                <Label>Target Amount</Label>
+                <Label>{t("targetAmount")}</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -427,7 +433,7 @@ export default function SavingsPage() {
                 />
               </div>
               <div>
-                <Label>Currency</Label>
+                <Label>{t("currency")}</Label>
                 <Select
                   value={goalForm.currency_code}
                   onValueChange={(value) =>
@@ -447,7 +453,7 @@ export default function SavingsPage() {
             </div>
 
             <div>
-              <Label>Target Date (optional)</Label>
+              <Label>{t("date")}</Label>
               <Input
                 type="date"
                 value={goalForm.target_date}
@@ -458,7 +464,7 @@ export default function SavingsPage() {
             </div>
 
             <div>
-              <Label>Description (optional)</Label>
+              <Label>{t("description")}</Label>
               <Input
                 placeholder="What are you saving for?"
                 value={goalForm.description}
@@ -474,13 +480,13 @@ export default function SavingsPage() {
                 variant="outline"
                 onClick={() => setIsGoalModalOpen(false)}
               >
-                Cancel
+                {t("cancel")}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 )}
-                Create Goal
+                {t("create")}
               </Button>
             </DialogFooter>
           </form>
@@ -501,7 +507,7 @@ export default function SavingsPage() {
           <form onSubmit={handleContribute} className="space-y-4">
             <div className="grid grid-cols-3 gap-2">
               <div className="col-span-2">
-                <Label>Amount</Label>
+                <Label>{t("amount")}</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -517,7 +523,7 @@ export default function SavingsPage() {
                 />
               </div>
               <div>
-                <Label>Currency</Label>
+                <Label>{t("currency")}</Label>
                 <Select
                   value={contributeForm.currency_code}
                   onValueChange={(value) =>
@@ -540,7 +546,7 @@ export default function SavingsPage() {
             </div>
 
             <div>
-              <Label>Date</Label>
+              <Label>{t("date")}</Label>
               <Input
                 type="date"
                 value={contributeForm.contribution_date}
@@ -555,7 +561,7 @@ export default function SavingsPage() {
             </div>
 
             <div>
-              <Label>Notes (optional)</Label>
+              <Label>{t("notes")}</Label>
               <Input
                 placeholder="Any notes about this contribution"
                 value={contributeForm.notes}
@@ -574,13 +580,13 @@ export default function SavingsPage() {
                 variant="outline"
                 onClick={() => setIsContributeModalOpen(false)}
               >
-                Cancel
+                {t("cancel")}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 )}
-                Add Contribution
+                {t("contribute")}
               </Button>
             </DialogFooter>
           </form>

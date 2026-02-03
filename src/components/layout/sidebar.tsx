@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import { useLanguage } from "@/components/language-provider";
 import Image from "next/image";
 import {
   LayoutDashboard,
@@ -15,21 +16,29 @@ import {
   LogOut,
   Menu,
   X,
-  Wallet,
 } from "lucide-react";
 import { useState } from "react";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/transactions", label: "Transactions", icon: ArrowUpDown },
-  { href: "/dashboard/savings", label: "Savings", icon: PiggyBank },
-  { href: "/dashboard/reports", label: "Reports", icon: BarChart3 },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard", labelKey: "dashboard" as const, icon: LayoutDashboard },
+  {
+    href: "/dashboard/transactions",
+    labelKey: "transactions" as const,
+    icon: ArrowUpDown,
+  },
+  { href: "/dashboard/savings", labelKey: "savings" as const, icon: PiggyBank },
+  { href: "/dashboard/reports", labelKey: "reports" as const, icon: BarChart3 },
+  {
+    href: "/dashboard/settings",
+    labelKey: "settings" as const,
+    icon: Settings,
+  },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
   const { logout, user } = useAuth();
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -98,7 +107,7 @@ export function Sidebar() {
                 )}
               >
                 <item.icon className="w-5 h-5" />
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             );
           })}
@@ -125,7 +134,7 @@ export function Sidebar() {
             onClick={() => logout()}
           >
             <LogOut className="w-4 h-4 mr-2" />
-            Logout
+            {t("logout")}
           </Button>
         </div>
       </aside>

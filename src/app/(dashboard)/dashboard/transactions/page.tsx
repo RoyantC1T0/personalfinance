@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { transactionsApi, categoriesApi } from "@/lib/api-client";
 import { useBalanceContext } from "@/components/balance-provider";
+import { useLanguage } from "@/components/language-provider";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Plus, Search, Filter, Trash2, Edit, Loader2 } from "lucide-react";
 
@@ -47,6 +48,7 @@ interface Category {
 
 export default function TransactionsPage() {
   const { refetch: refetchBalance } = useBalanceContext();
+  const { t } = useLanguage();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -121,7 +123,7 @@ export default function TransactionsPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this transaction?")) return;
+    if (!confirm(t("delete") + "?")) return;
 
     try {
       await transactionsApi.delete(id);
@@ -184,14 +186,12 @@ export default function TransactionsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Transactions</h1>
-          <p className="text-muted-foreground">
-            Manage your income and expenses
-          </p>
+          <h1 className="text-2xl font-bold">{t("transactions")}</h1>
+          <p className="text-muted-foreground">{t("manageTransactions")}</p>
         </div>
         <Button onClick={openNewModal}>
           <Plus className="h-4 w-4 mr-2" />
-          Add Transaction
+          {t("addTransaction")}
         </Button>
       </div>
 
@@ -203,7 +203,7 @@ export default function TransactionsPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search transactions..."
+                  placeholder={t("searchTransactions")}
                   className="pl-9"
                   value={filter.search}
                   onChange={(e) =>
@@ -221,9 +221,9 @@ export default function TransactionsPage() {
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="income">Income</SelectItem>
-                <SelectItem value="expense">Expenses</SelectItem>
+                <SelectItem value="all">{t("all")}</SelectItem>
+                <SelectItem value="income">{t("income")}</SelectItem>
+                <SelectItem value="expense">{t("expenses")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -297,9 +297,9 @@ export default function TransactionsPage() {
             </div>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
-              <p>No transactions found</p>
+              <p>{t("noTransactionsFound")}</p>
               <Button variant="link" onClick={openNewModal}>
-                Add your first transaction
+                {t("addTransaction")}
               </Button>
             </div>
           )}
@@ -311,7 +311,7 @@ export default function TransactionsPage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {editingTx ? "Edit Transaction" : "Add Transaction"}
+              {editingTx ? t("editTransaction") : t("addNewTransaction")}
             </DialogTitle>
           </DialogHeader>
 
@@ -331,7 +331,7 @@ export default function TransactionsPage() {
                   })
                 }
               >
-                Expense
+                {t("expenses")}
               </Button>
               <Button
                 type="button"
@@ -346,14 +346,14 @@ export default function TransactionsPage() {
                   })
                 }
               >
-                Income
+                {t("income")}
               </Button>
             </div>
 
             {/* Amount + Currency */}
             <div className="grid grid-cols-3 gap-2">
               <div className="col-span-2">
-                <Label>Amount</Label>
+                <Label>{t("amount")}</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -364,7 +364,7 @@ export default function TransactionsPage() {
                 />
               </div>
               <div>
-                <Label>Currency</Label>
+                <Label>{t("currency")}</Label>
                 <Select
                   value={form.currency_code}
                   onValueChange={(value) =>
@@ -385,7 +385,7 @@ export default function TransactionsPage() {
 
             {/* Category */}
             <div>
-              <Label>Category</Label>
+              <Label>{t("category")}</Label>
               <Select
                 value={form.category_id}
                 onValueChange={(value) =>
@@ -393,7 +393,7 @@ export default function TransactionsPage() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue placeholder={t("selectCategory")} />
                 </SelectTrigger>
                 <SelectContent>
                   {filteredCategories.map((cat) => (
@@ -416,7 +416,7 @@ export default function TransactionsPage() {
 
             {/* Date */}
             <div>
-              <Label>Date</Label>
+              <Label>{t("date")}</Label>
               <Input
                 type="date"
                 value={form.transaction_date}
@@ -429,7 +429,7 @@ export default function TransactionsPage() {
 
             {/* Description */}
             <div>
-              <Label>Description (optional)</Label>
+              <Label>{t("description")}</Label>
               <Input
                 placeholder="What was this for?"
                 value={form.description}
@@ -445,13 +445,13 @@ export default function TransactionsPage() {
                 variant="outline"
                 onClick={() => setIsModalOpen(false)}
               >
-                Cancel
+                {t("cancel")}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 )}
-                {editingTx ? "Update" : "Add"}
+                {editingTx ? t("save") : t("add")}
               </Button>
             </DialogFooter>
           </form>

@@ -122,6 +122,7 @@ const translations = {
 
     // Sidebar
     overview: "Overview",
+    logout: "Logout",
 
     // Auth
     login: "Login",
@@ -269,6 +270,7 @@ const translations = {
 
     // Sidebar
     overview: "Resumen",
+    logout: "Cerrar Sesión",
 
     // Auth
     login: "Iniciar Sesión",

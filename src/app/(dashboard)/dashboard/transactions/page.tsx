@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,7 +47,7 @@ interface Category {
 }
 
 export default function TransactionsPage() {
-  const { refetch: refetchBalance } = useBalanceContext();
+  const { balance, refetch: refetchBalance } = useBalanceContext();
   const { t } = useLanguage();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -61,18 +61,14 @@ export default function TransactionsPage() {
     transaction_type: "expense" as "income" | "expense",
     category_id: "",
     amount: "",
-    currency_code: "USD",
+    currency_code: balance?.currency_code || "USD",
     transaction_date: new Date().toISOString().split("T")[0],
     description: "",
     notes: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, [filter.type]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
       const params: Record<string, string> = { limit: "50" };
@@ -90,7 +86,11 @@ export default function TransactionsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filter.type]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -153,7 +153,7 @@ export default function TransactionsPage() {
       transaction_type: "expense",
       category_id: "",
       amount: "",
-      currency_code: "USD",
+      currency_code: balance?.currency_code || "USD",
       transaction_date: new Date().toISOString().split("T")[0],
       description: "",
       notes: "",
@@ -173,7 +173,9 @@ export default function TransactionsPage() {
   const filteredTransactions = transactions.filter((tx) => {
     if (filter.search) {
       const search = filter.search.toLowerCase();
+      const translatedCategory = t(tx.category_name).toLowerCase();
       return (
+        translatedCategory.includes(search) ||
         tx.category_name.toLowerCase().includes(search) ||
         tx.description?.toLowerCase().includes(search)
       );
@@ -255,7 +257,9 @@ export default function TransactionsPage() {
                       {tx.transaction_type === "income" ? "↑" : "↓"}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium truncate">{tx.category_name}</p>
+                      <p className="font-medium truncate">
+                        {t(tx.category_name)}
+                      </p>
                       <p className="text-sm text-muted-foreground truncate">
                         {tx.description ||
                           formatDate(tx.transaction_date, "short")}
@@ -406,7 +410,7 @@ export default function TransactionsPage() {
                           className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: cat.color_hex }}
                         />
-                        {cat.category_name}
+                        {t(cat.category_name)}
                       </div>
                     </SelectItem>
                   ))}

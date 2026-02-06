@@ -161,6 +161,28 @@ const translations = {
     readyToStart: "Ready to Start?",
     joinUsers: "Join thousands of users taking control of their finances.",
     allRightsReserved: "All rights reserved.",
+
+    // Categories
+    "Food & Dining": "Food & Dining",
+    Transportation: "Transportation",
+    Housing: "Housing",
+    Utilities: "Utilities",
+    Entertainment: "Entertainment",
+    Shopping: "Shopping",
+    Healthcare: "Healthcare",
+    Education: "Education",
+    "Other Expenses": "Other Expenses",
+    Salary: "Salary",
+    Freelance: "Freelance",
+    Investments: "Investments",
+    "Other Income": "Other Income",
+    Alquiler: "Rent",
+    Servicios: "Services",
+    Expensas: "Building Fees",
+    Tarjetas: "Credit Cards",
+    Creditos: "Loans",
+    addDefaultCategories: "Add Default Categories",
+    categoriesInitialized: "Missing categories added successfully!",
   },
   es: {
     // Dashboard
@@ -309,6 +331,28 @@ const translations = {
     readyToStart: "¿Listo para Empezar?",
     joinUsers: "Unite a miles de usuarios que controlan sus finanzas.",
     allRightsReserved: "Todos los derechos reservados.",
+
+    // Categories
+    "Food & Dining": "Comida y Gastronomía",
+    Transportation: "Transporte",
+    Housing: "Vivienda",
+    Utilities: "Servicios",
+    Entertainment: "Entretenimiento",
+    Shopping: "Compras",
+    Healthcare: "Salud",
+    Education: "Educación",
+    "Other Expenses": "Otros Gastos",
+    Salary: "Salario",
+    Freelance: "Freelance",
+    Investments: "Inversiones",
+    "Other Income": "Otros Ingresos",
+    Alquiler: "Alquiler",
+    Servicios: "Servicios",
+    Expensas: "Expensas",
+    Tarjetas: "Tarjetas",
+    Creditos: "Créditos",
+    addDefaultCategories: "Agregar Categorías Faltantes",
+    categoriesInitialized: "¡Categorías faltantes agregadas con éxito!",
   },
 } as const;
 
@@ -317,7 +361,7 @@ type TranslationKey = keyof (typeof translations)["en"];
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: TranslationKey) => string;
+  t: (key: TranslationKey | string) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
@@ -329,11 +373,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     const saved = localStorage.getItem("language") as Language | null;
     if (saved && (saved === "es" || saved === "en")) {
       setLanguageState(saved);
     }
+    setMounted(true);
   }, []);
 
   const setLanguage = useCallback((lang: Language) => {
@@ -342,8 +386,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const t = useCallback(
-    (key: TranslationKey): string => {
-      return translations[language][key] || key;
+    (key: TranslationKey | string): string => {
+      const langTranslations = translations[language] as Record<string, string>;
+      return langTranslations[key] || key;
     },
     [language],
   );

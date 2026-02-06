@@ -96,6 +96,16 @@ export async function POST(request: NextRequest) {
       },
       { name: "Healthcare", type: "expense", color: "#87CEEB", icon: "heart" },
       { name: "Education", type: "expense", color: "#98D8C8", icon: "book" },
+      { name: "Alquiler", type: "expense", color: "#F4A460", icon: "home" },
+      { name: "Servicios", type: "expense", color: "#96CEB4", icon: "zap" },
+      { name: "Expensas", type: "expense", color: "#BC8F8F", icon: "building" },
+      {
+        name: "Tarjetas",
+        type: "expense",
+        color: "#4682B4",
+        icon: "credit-card",
+      },
+      { name: "Creditos", type: "expense", color: "#DA70D6", icon: "wallet" },
       {
         name: "Other Expenses",
         type: "expense",

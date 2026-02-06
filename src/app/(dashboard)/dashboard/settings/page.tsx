@@ -104,6 +104,52 @@ export default function SettingsPage() {
     (c) => c.transaction_type === "income",
   );
 
+  const handleAddDefaultCategories = async () => {
+    const defaults = [
+      { name: "Alquiler", type: "expense", color: "#F4A460", icon: "home" },
+      { name: "Servicios", type: "expense", color: "#96CEB4", icon: "zap" },
+      { name: "Expensas", type: "expense", color: "#BC8F8F", icon: "building" },
+      {
+        name: "Tarjetas",
+        type: "expense",
+        color: "#4682B4",
+        icon: "credit-card",
+      },
+      { name: "Creditos", type: "expense", color: "#DA70D6", icon: "wallet" },
+    ];
+
+    setIsLoading(true);
+    try {
+      let added = 0;
+      for (const cat of defaults) {
+        const exists = categories.find(
+          (c) =>
+            c.category_name.toLowerCase() === cat.name.toLowerCase() &&
+            c.transaction_type === cat.type,
+        );
+
+        if (!exists) {
+          await categoriesApi.create({
+            category_name: cat.name,
+            transaction_type: cat.type,
+            color_hex: cat.color,
+            icon: cat.icon,
+          });
+          added++;
+        }
+      }
+
+      if (added > 0) {
+        await fetchCategories();
+        alert(t("categoriesInitialized"));
+      }
+    } catch (error) {
+      console.error("Error adding default categories:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-3xl">
       {/* Header */}
@@ -265,9 +311,24 @@ export default function SettingsPage() {
 
       {/* Categories */}
       <Card>
-        <CardHeader>
-          <CardTitle>{t("categories")}</CardTitle>
-          <CardDescription>{t("yourCategories")}</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <div>
+            <CardTitle>{t("categories")}</CardTitle>
+            <CardDescription>{t("yourCategories")}</CardDescription>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleAddDefaultCategories}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Palette className="h-4 w-4 mr-2" />
+            )}
+            {t("addDefaultCategories")}
+          </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -288,7 +349,7 @@ export default function SettingsPage() {
                     className="w-2 h-2 rounded-full"
                     style={{ backgroundColor: cat.color_hex }}
                   />
-                  {cat.category_name}
+                  {t(cat.category_name)}
                 </div>
               ))}
             </div>
@@ -312,7 +373,7 @@ export default function SettingsPage() {
                     className="w-2 h-2 rounded-full"
                     style={{ backgroundColor: cat.color_hex }}
                   />
-                  {cat.category_name}
+                  {t(cat.category_name)}
                 </div>
               ))}
             </div>

@@ -34,7 +34,7 @@ Rules:
 - Detect currency: "pesos/ARS" → ARS, "dólares/USD" → USD
 - Default currency: USER_CURRENCY
 - Default date: TODAY
-- Categories: Food & Dining, Transportation, Housing, Utilities, Entertainment, Shopping, Healthcare, Salary, Freelance`;
+- Categories: Food & Dining, Transportation, Housing, Utilities, Entertainment, Shopping, Healthcare, Salary, Freelance, Alquiler, Servicios, Expensas, Tarjetas, Créditos`;
 
 // GET - Get voice command history
 export async function GET(request: NextRequest) {
@@ -265,9 +265,23 @@ function simpleParse(
     category = "Food & Dining";
   if (text.includes("uber") || text.includes("taxi") || text.includes("nafta"))
     category = "Transportation";
-  if (text.includes("alquiler") || text.includes("rent")) category = "Housing";
-  if (text.includes("luz") || text.includes("gas") || text.includes("agua"))
-    category = "Utilities";
+  if (text.includes("alquiler") || text.includes("rent")) category = "Alquiler";
+  if (
+    text.includes("luz") ||
+    text.includes("gas") ||
+    text.includes("agua") ||
+    text.includes("servicios")
+  )
+    category = "Servicios";
+  if (text.includes("expensas")) category = "Expensas";
+  if (
+    text.includes("tarjeta") ||
+    text.includes("visa") ||
+    text.includes("mastercard")
+  )
+    category = "Tarjetas";
+  if (text.includes("credito") || text.includes("préstamo"))
+    category = "Creditos";
 
   return {
     intent,

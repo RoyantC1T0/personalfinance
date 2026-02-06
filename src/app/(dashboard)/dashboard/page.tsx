@@ -402,7 +402,7 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium">
-                          {tx.category_name}
+                          {t(tx.category_name)}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {tx.description ||

